@@ -1,5 +1,5 @@
 import tensorflow_datasets as tfds
-
+import os
 def to_list(dataset):
     out = []
     for pt_examples, en_examples in dataset.batch(1):
@@ -19,6 +19,16 @@ def save_in_file(word_list, path):
             to_save = pair[0] + "<ENG>" + pair[1] + "\n"
             file.write(to_save)
 
+
+try:
+    os.mkdir("../datasets")
+except FileExistsError:
+    pass
+
+try:
+    os.mkdir("../datasets/eng-pt")
+except FileExistsError:
+    pass
 
 examples, metadata = tfds.load('ted_hrlr_translate/pt_to_en', with_info=True, as_supervised=True)
 
