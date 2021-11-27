@@ -136,8 +136,7 @@ class Transformer(tf.keras.Model):
 
         self.final_layer = tf.keras.layers.Dense(target_vocab_size)
 
-    def call(self, inputs, training):
-        # Keras models prefer if you pass all your inputs in the first argument
+    def train_call(self, inputs, training):
         inp, tar = inputs
 
         enc_padding_mask, look_ahead_mask, dec_padding_mask = self.create_masks(inp, tar)
@@ -150,6 +149,30 @@ class Transformer(tf.keras.Model):
         final_output = self.final_layer(dec_output)  # (batch_size, tar_seq_len, target_vocab_size)
 
         return final_output
+
+    def infecrence_call(self, input_tensor, tar = None):
+        shape = input_tensor.shape
+        if tar is None:
+            tar = tf.ones(shape=(shape[0], 1))
+
+        enc_padding_mask, look_ahead_mask, dec_padding_mask = self.create_masks(input_tensor, tar)
+
+        enc_output = self.encoder(input_tensor, False, enc_padding_mask)  # (batch_size, inp_seq_len, d_model)
+
+        # dec_output.shape == (batch_size, tar_seq_len, d_model)
+        dec_output = self.decoder(tar, enc_output, False, look_ahead_mask, dec_padding_mask)
+
+        final_output = self.final_layer(dec_output)  # (batch_size, tar_seq_len, target_vocab_size)
+        final_output = tf.argmax(final_output, axis = 2 )
+        final_output = tf.slice(final_output, [0, final_output.shape[1]-1], [shape[0] , 1])
+
+        return final_output
+
+    def call(self, inputs, training):
+        if training == True:
+            return self.train_call(inputs, training)
+        else:
+            return self.infecrence_call(inputs)
 
     def create_masks(self, inp, tar):
         # Encoder padding mask

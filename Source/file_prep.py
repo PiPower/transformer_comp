@@ -32,13 +32,10 @@ except FileExistsError:
 
 examples, metadata = tfds.load('ted_hrlr_translate/pt_to_en', with_info=True, as_supervised=True)
 
-train_examples, val_examples, test_examples = examples['train'], examples['validation'], examples['test']
+train_examples, test_examples = examples['train'], examples['test']
 
 train_dataset = to_list(train_examples)
 save_in_file(train_dataset,"../datasets/eng-pt/train.txt" )
-
-val_dataset = to_list(val_examples)
-save_in_file(val_dataset,"../datasets/eng-pt/val.txt" )
 
 test_dataset = to_list(test_examples)
 save_in_file(test_dataset,"../datasets/eng-pt/test.txt" )
