@@ -150,10 +150,9 @@ class Transformer(tf.keras.Model):
 
         return final_output
 
-    def infecrence_call(self, input_tensor, tar = None):
+    def infecrence_call(self, inputs):
+        input_tensor, tar = inputs
         shape = input_tensor.shape
-        if tar is None:
-            tar = tf.ones(shape=(shape[0], 1))
 
         enc_padding_mask, look_ahead_mask, dec_padding_mask = self.create_masks(input_tensor, tar)
 

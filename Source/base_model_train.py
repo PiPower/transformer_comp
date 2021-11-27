@@ -1,6 +1,7 @@
 import json
 import os
 
+import numpy as np
 from tensorflow.keras.preprocessing.text import Tokenizer
 from base_model import Transformer
 from transformer_layers import auto_reg_loss, accuracy_function
@@ -20,12 +21,13 @@ def load_texts(path, word_limit = None):
         break
     return out_pt, out_eng
 
-def preprocess_data(eng, pt, tokenizer_eng, tokenizer_pt, batch_size = 32):
+def preprocess_data(eng, pt, tokenizer_eng, tokenizer_pt, batch_size = 32, pad = True):
   eng = tokenizer_eng.texts_to_sequences(eng)
   pt = tokenizer_pt.texts_to_sequences(pt)
 
-  eng = pad_sequences(eng, padding='post')
-  pt = pad_sequences(pt, padding='post')
+  if pad:
+    eng = pad_sequences(eng, padding='post', maxlen=60)
+    pt = pad_sequences(pt, padding='post', maxlen=60)
 
   dataset = tf.data.Dataset.from_tensor_slices((eng,pt))
   dataset = dataset.batch(batch_size, True)
@@ -48,9 +50,62 @@ def train_base(train_dataset, eng_word_count, pt_word_count,optimizer = "Adam",*
 
   return history, transformer_model
 
+def evaluate_sentence_prediction(predicted, real):
+  xd = 's'
+  real = list(real[0])
+  difference = abs( len(real) -  len(predicted))
+  #matching size of real and predicted
+  if len(real) > len(predicted):
+    for _ in range( difference):
+      predicted.append(0)
+
+  if len(real) < len(predicted):
+    for _ in range(difference):
+      real.append(0)
+
+  total_number = -1
+  correct = -1
+  for i in range(len(real)):
+    if real[i] == predicted[i] and real[i] == 0:
+      break
+
+    if real[i] == predicted[i] and real[i] != 0 :
+      correct += 1
+
+    total_number += 1
+  return correct, total_number
+
+def test(tokenizer_pt, model, test_dataset, test_count, max_length = 10):
+  begin_char = tokenizer_pt.word_index["bos"]
+  completed_predictions = []
+  for j, sentence in enumerate(test_dataset):
+    input_sentece, target_sentence = sentence
+    tar = [begin_char]
+    if j % 5 == 0:
+      print("it is {}th sentence".format(j))
+
+    for i in range(max_length):
+        feed = np.asarray([tar ] )
+        prediction = model([input_sentece,feed])
+        result = prediction.numpy()[0][0]
+        tar.append(result)
+        if result == tokenizer_pt.word_index["eos"]:
+          break
+    completed_predictions.append((tar, target_sentence.numpy() ))
+    if j > test_count:
+      break
+
+  total_correct, total_predicted = 0, 0
+
+  for pred, real in completed_predictions:
+    a,b = evaluate_sentence_prediction(pred, real)
+    total_correct+= a
+    total_predicted += b
+  return total_correct/total_predicted
+
 if __name__ == "__main__":
-  train_pt, train_eng = load_texts("../datasets/eng-pt/train.txt", 70)
-  test_pt, test_eng = load_texts("../datasets/eng-pt/text.txt", 70)
+  train_pt, train_eng = load_texts("../datasets/eng-pt/train.txt", 25000)
+  test_pt, test_eng = load_texts("../datasets/eng-pt/test.txt", 40)
 
   tokenizer_eng = Tokenizer()
   tokenizer_pt = Tokenizer()
@@ -66,25 +121,34 @@ if __name__ == "__main__":
   eos_val = tokenizer_pt.word_index["eos"]
   model_histories = {}
 
-  history, model = train_base(train_dataset, eng_word_count, pt_word_count, epochs=3)
   lol = ["adam"]
   for name in lol:
       if name == "adam":
         history, model  = train_base(train_dataset, eng_word_count, pt_word_count, epochs = 3)
+        accuracy = test(tokenizer_pt, model, test_dataset, 40, 40)
         model_histories["adam"] = history.history
+        model_histories["adam"]["test accuracy"] = accuracy
       elif name == "rmsprop":
-        history, model  = train_base(train_dataset, eng_word_count, pt_word_count, optimizer = "rmsprop",epochs = 3)
+        history, model  = train_base(train_dataset, eng_word_count, pt_word_count, optimizer = "rmsprop",epochs = 30)
+        accuracy = test(tokenizer_pt, model, test_dataset, 40, 40)
         model_histories["rmsprop"] = history.history
+        model_histories["rmsprop"]["test accuracy"] = accuracy
       elif name == "sgd":
-        history, model  = train_base(train_dataset, eng_word_count, pt_word_count, optimizer = "sgd",epochs = 3)
+        history, model  = train_base(train_dataset, eng_word_count, pt_word_count, optimizer = "sgd",epochs = 30)
+        accuracy = test(tokenizer_pt, model, test_dataset, 40, 40)
         model_histories["sgd"] = history.history
+        model_histories["sgd"]["test accuracy"] = accuracy
       elif name == "nadam":
-        history, model  = train_base(train_dataset, eng_word_count, pt_word_count, optimizer="nadam", epochs=3)
+        history, model  = train_base(train_dataset, eng_word_count, pt_word_count, optimizer="nadam", epochs=30)
+        accuracy = test(tokenizer_pt, model, test_dataset, 40, 40)
         model_histories["nadam"] = history.history
+        model_histories["nadam"]["test accuracy"] = accuracy
   try:
     os.mkdir("../trainning_results")
   except FileExistsError:
     pass
+
+
   with open("../trainning_results/base_model_results", "w") as file:
     json.dump(model_histories, file, indent=True, ensure_ascii= False)
 
