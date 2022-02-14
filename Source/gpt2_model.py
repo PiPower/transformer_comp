@@ -122,26 +122,32 @@ class GPT2(tf.keras.Model):
     def create_masks(self,inp):
         mask = create_look_ahead_mask(tf.shape(inp)[1])
         return mask
+    def create_loss_mask(self, inp ):
+        mask = tf.ones(tf.shape(inp), dtype=tf.int32) * self.sep_token
+        mask = tf.equal(inp, mask)
+        mask = tf.cast(mask, dtype=tf.int32)
+        mask_indicator = tf.argmax(mask, axis=1)
+        mask_indicator = tf.expand_dims(mask_indicator, axis=1)
+        mask_indicator = tf.tile(mask_indicator, [1, tf.shape(inp)[1]])
+        comparison_matrix = tf.ones(tf.shape(inp), dtype=tf.int64) * mask_indicator
+
+        index_matrix = tf.range(0, tf.shape(inp)[1], dtype=tf.int64 )
+        index_matrix = tf.expand_dims(index_matrix, axis = 0)
+        index_matrix = tf.tile(index_matrix, [tf.shape(inp)[0], 1])
+
+        loss_mask = tf.math.greater(index_matrix,mask_indicator)
+        loss_mask = tf.cast(loss_mask, dtype=tf.int32)
+        return loss_mask
 
     def train_step(self, input_list):
         inp_tensor, tar = input_list
         inp = inp_tensor[:, 1:]
         tar_real = inp_tensor[:, 1:]
 
-        mask = tf.ones( tf.shape(inp), dtype=tf.int32) * self.sep_token
-        mask_indicator = np.asarray(tf.equal(inp, mask))
+        comp_mask = self.create_loss_mask(inp)
         with tf.GradientTape() as tape:
             predictions = self(inp,training=True)
-            loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
-                from_logits=True, reduction='none')
-
-            mask = tf.math.logical_not(tf.math.equal(tar_real, 0))
-            loss_ = loss_object(tar_real, predictions)
-
-            mask = tf.cast(mask, dtype=loss_.dtype)
-            loss_ *= mask
-
-            loss = self.compiled_loss(tar_real, predictions)
+            loss = self.compiled_loss(tar_real, predictions, comp_mask)
 
         gradients = tape.gradient(loss, self.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))

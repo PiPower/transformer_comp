@@ -14,7 +14,7 @@ def accuracy_function(real, pred):
     return tf.reduce_sum(accuracies)/tf.reduce_sum(mask)
 
 
-def auto_reg_loss(real, pred):
+def auto_reg_loss(real, pred, additional_mask= None):
     loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
         from_logits=True, reduction='none')
 
@@ -22,6 +22,12 @@ def auto_reg_loss(real, pred):
     loss_ = loss_object(real, pred)
 
     mask = tf.cast(mask, dtype=loss_.dtype)
+
+    if additional_mask is not None:
+        additional_mask = tf.cast(additional_mask, loss_.dtype)
+        mask = mask + additional_mask
+        mask = tf.math.equal(mask, 2)
+
     loss_ *= mask
 
     return tf.reduce_sum(loss_)/tf.reduce_sum(mask)
