@@ -147,5 +147,3 @@ class GPT2(tf.keras.Model):
         self.compiled_metrics.update_state(tar_real, predictions)
         # Return a dict mapping metric names to current value
         return {m.name: m.result() for m in self.metrics}
-
-
