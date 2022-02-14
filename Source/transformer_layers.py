@@ -27,6 +27,7 @@ def auto_reg_loss(real, pred, additional_mask= None):
         additional_mask = tf.cast(additional_mask, loss_.dtype)
         mask = mask + additional_mask
         mask = tf.math.equal(mask, 2)
+        mask = tf.cast(mask, loss_.dtype)
 
     loss_ *= mask
 

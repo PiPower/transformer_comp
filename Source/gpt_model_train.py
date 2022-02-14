@@ -9,7 +9,7 @@ import tensorflow as tf
 import sys
 from common import *
 
-def train_gpt(train_dataset, eng_word_count, sep_token ,pt_word_count,optimizer = "Adam",  num_layers = 4,
+def train_gpt(train_dataset, eng_word_count ,pt_word_count,sep_token, optimizer = "Adam",  num_layers = 4,
   d_model = 128, dff = 512, num_heads = 8, dropout_rate = 0.1,**kwargs ):
 
 
@@ -24,7 +24,7 @@ def train_gpt(train_dataset, eng_word_count, sep_token ,pt_word_count,optimizer 
 
 if __name__ == "__main__":
   train_pt, train_eng = load_texts_gpt2("../datasets/eng-pt/train.txt", 200)
-  test_pt, test_eng = load_texts_gpt2("../datasets/eng-pt/test.txt", 10)
+  test_pt, test_eng = load_texts_gpt2("../datasets/eng-pt/test.txt", 200)
 
   tokenizer_eng = Tokenizer()
   tokenizer_pt = Tokenizer()
@@ -34,8 +34,8 @@ if __name__ == "__main__":
 
   sep_token = tokenizer_eng.word_index['bos']
 
-  train_dataset = preprocess_data(train_eng,train_pt, tokenizer_eng, tokenizer_pt, 64)
-  test_dataset = preprocess_data(test_eng,test_pt, tokenizer_eng, tokenizer_pt, 1, to_tuple= True)
+  train_dataset = preprocess_data(train_eng,train_pt, tokenizer_eng, tokenizer_pt, 64, max_len=150)
+  test_dataset = preprocess_data(test_eng,test_pt, tokenizer_eng, tokenizer_pt, 1,max_len=150, to_tuple= True)
 
   eng_word_count = len(tokenizer_eng.word_index)+1
   pt_word_count = len(tokenizer_pt.word_index)+1
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         print("training on adam")
         learning_rate = CustomSchedule(128)
         optimizer_adam = tf.keras.optimizers.Adam(learning_rate)
-        history, model  = train_gpt(train_dataset, eng_word_count, sep_token, pt_word_count, optimizer = optimizer_adam, epochs = 2)
+        history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_adam, epochs = 2)
         accuracy = test(tokenizer_pt, model, test_dataset, 500, 60)
         model_histories["adam"] = history.history
         model_histories["adam"]["test accuracy"] = accuracy

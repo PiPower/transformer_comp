@@ -71,10 +71,10 @@ class GPT2(tf.keras.Model):
         super().__init__()
 
         self.decoder = Decoder(num_layers, d_model, num_heads, dff,
-                               target_vocab_size, pe_target, rate)
+                               input_vocab_size, pe_target, rate)
 
         self.sep_token = sep_token
-        self.final_layer = tf.keras.layers.Dense(target_vocab_size)
+        self.final_layer = tf.keras.layers.Dense(input_vocab_size)
 
     def train_call(self, input_tensor, training):
         mask = self.create_masks(input_tensor)
@@ -129,7 +129,6 @@ class GPT2(tf.keras.Model):
         mask_indicator = tf.argmax(mask, axis=1)
         mask_indicator = tf.expand_dims(mask_indicator, axis=1)
         mask_indicator = tf.tile(mask_indicator, [1, tf.shape(inp)[1]])
-        comparison_matrix = tf.ones(tf.shape(inp), dtype=tf.int64) * mask_indicator
 
         index_matrix = tf.range(0, tf.shape(inp)[1], dtype=tf.int64 )
         index_matrix = tf.expand_dims(index_matrix, axis = 0)
@@ -144,7 +143,7 @@ class GPT2(tf.keras.Model):
         inp = inp_tensor[:, 1:]
         tar_real = inp_tensor[:, 1:]
 
-        comp_mask = self.create_loss_mask(inp)
+        comp_mask = self.create_loss_mask(tar_real)
         with tf.GradientTape() as tape:
             predictions = self(inp,training=True)
             loss = self.compiled_loss(tar_real, predictions, comp_mask)

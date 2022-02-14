@@ -24,8 +24,8 @@ def train_base(train_dataset, eng_word_count, pt_word_count,optimizer = "Adam", 
 
 
 if __name__ == "__main__":
-  train_pt, train_eng = load_texts("../datasets/eng-pt/train.txt", 200)
-  test_pt, test_eng = load_texts("../datasets/eng-pt/test.txt", 10)
+  train_pt, train_eng = load_texts("../datasets/eng-pt/train.txt")
+  test_pt, test_eng = load_texts("../datasets/eng-pt/test.txt")
 
   tokenizer_eng = Tokenizer()
   tokenizer_pt = Tokenizer()
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
   json_file_path = "../trainning_results/base_model_results.json"
 
-  for name in ["adam"]:
+  for name in sys.argv:
       if name == "adam":
         print("training on adam")
         learning_rate = CustomSchedule(128)
