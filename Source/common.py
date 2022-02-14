@@ -3,12 +3,16 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import tensorflow as tf
 
 
-def preprocess_data(net_input, pt, tokenizer_eng, tokenizer_pt, batch_size = 32, max_len= None, to_tuple = False):
+def preprocess_data(net_input, pt, tokenizer_eng, tokenizer_pt = None, batch_size = 32, max_len= None, to_tuple = False):
   net_input = tokenizer_eng.texts_to_sequences(net_input)
-  pt = tokenizer_pt.texts_to_sequences(pt)
-
   net_input = pad_sequences(net_input, padding='post', maxlen=max_len)
-  pt = pad_sequences(pt, padding='post', maxlen=max_len)
+
+  if tokenizer_pt is None:
+    pt = tokenizer_eng.texts_to_sequences(pt)
+    pt = pad_sequences(pt, padding='post', maxlen=max_len)
+  else:
+    pt = tokenizer_pt.texts_to_sequences(pt)
+    pt = pad_sequences(pt, padding='post', maxlen=max_len)
 
   dataset = tf.data.Dataset.from_tensor_slices((net_input,pt))
 
@@ -70,7 +74,7 @@ def evaluate_sentence_prediction(predicted, real):
     total_number += 1
   return correct, total_number
 
-def test(tokenizer_pt, model, test_dataset, test_count, max_length = 10):
+def test(tokenizer_pt, model, test_dataset, test_count, max_length = 10, mode = "base_model"):
   begin_char = tokenizer_pt.word_index["bos"]
   completed_predictions = []
   for j, sentence in enumerate(test_dataset):
@@ -81,7 +85,15 @@ def test(tokenizer_pt, model, test_dataset, test_count, max_length = 10):
 
     for i in range(max_length):
         feed = np.asarray([tar ] )
-        prediction = model([input_sentece,feed])
+        if mode == "base_model":
+            prediction = model([input_sentece,feed])
+        else:
+          zero_index = tf.reduce_sum ( tf.argmin(input_sentece, axis=-1) ).numpy()
+          input_tensor = input_sentece[:, :zero_index]
+          feed_tensor = tf.convert_to_tensor(feed, dtype=tf.int32)
+          input_tensor = tf.concat([input_tensor, feed_tensor], axis = -1)
+          prediction = model(input_tensor)
+
         result = prediction.numpy()[0][0]
         tar.append(result)
         if result == tokenizer_pt.word_index["eos"]:

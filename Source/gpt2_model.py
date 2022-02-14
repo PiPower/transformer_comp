@@ -86,21 +86,14 @@ class GPT2(tf.keras.Model):
 
         return final_output
 
-    def infecrence_call(self, inputs):
-        input_tensor, tar = inputs
-        shape = input_tensor.shape
-
-        enc_padding_mask, look_ahead_mask, dec_padding_mask = self.create_masks(input_tensor, tar)
-
-        enc_output = self.encoder(input_tensor, False, enc_padding_mask)  # (batch_size, inp_seq_len, d_model)
-
+    def infecrence_call(self, input_tensor):
+        shape = tf.shape(input_tensor)
         # dec_output.shape == (batch_size, tar_seq_len, d_model)
-        dec_output = self.decoder(tar, enc_output, False, look_ahead_mask, dec_padding_mask)
+        dec_output = self.decoder(input_tensor, False, None)
 
         final_output = self.final_layer(dec_output)  # (batch_size, tar_seq_len, target_vocab_size)
         final_output = tf.argmax(final_output, axis = 2 )
         final_output = tf.slice(final_output, [0, final_output.shape[1]-1], [shape[0] , 1])
-
         return final_output
 
     def call(self, inputs, training):
