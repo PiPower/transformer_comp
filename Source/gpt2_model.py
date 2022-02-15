@@ -102,8 +102,6 @@ class GPT2(tf.keras.Model):
         else:
             return self.infecrence_call(inputs)
     def gpt2_ahead_mask(self, inp):
-
-
         y = tf.ones(shape= tf.shape(inp), dtype=tf.int32) * self.sep_token
         z = tf.cast(tf.math.equal(inp,y), dtype=tf.int32)
         z = np.asarray( tf.argmax(z, axis=-1) ) + 1
