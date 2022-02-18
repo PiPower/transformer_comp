@@ -29,14 +29,14 @@ if __name__ == "__main__":
   test_pt, test_eng = load_texts("../datasets/eng-pt/test.txt", test_count)
 
   tokenizer_eng = Tokenizer()
-  tokenizer_pt = Tokenizer()
+  tokenizer_pt = Tokenizer(oov_token = 'oov')
 
   tokenizer_eng.fit_on_texts(train_eng)
   tokenizer_pt.fit_on_texts(train_pt)
 
-  sep_token = tokenizer_eng.word_index['bos']
+  sep_token = tokenizer_pt.word_index['bos']
 
-  train_dataset = preprocess_data(train_eng,train_pt, tokenizer_eng, batch_size= 64)
+  train_dataset = preprocess_data(train_eng,train_eng, tokenizer_eng,tokenizer_pt, batch_size= 64)
   test_dataset = preprocess_data(test_eng,test_pt, tokenizer_eng, batch_size=1, to_tuple= True)
 
   eng_word_count = len(tokenizer_eng.word_index)+1

@@ -74,7 +74,7 @@ class GPT2(tf.keras.Model):
                                input_vocab_size, pe_target, rate)
 
         self.sep_token = sep_token
-        self.final_layer = tf.keras.layers.Dense(input_vocab_size)
+        self.final_layer = tf.keras.layers.Dense(target_vocab_size)
 
     def train_call(self, input_tensor, training):
         mask = self.create_masks(input_tensor)
@@ -101,14 +101,6 @@ class GPT2(tf.keras.Model):
             return self.train_call(inputs, training)
         else:
             return self.infecrence_call(inputs)
-    def gpt2_ahead_mask(self, inp):
-        y = tf.ones(shape= tf.shape(inp), dtype=tf.int32) * self.sep_token
-        z = tf.cast(tf.math.equal(inp,y), dtype=tf.int32)
-        z = np.asarray( tf.argmax(z, axis=-1) ) + 1
-        z  = z[ 0 ]
-        mask = np.ones((183,183))
-        mask = mask[: ]
-        return z
 
     def create_masks(self,inp):
         mask = create_look_ahead_mask(tf.shape(inp)[1])
@@ -117,21 +109,21 @@ class GPT2(tf.keras.Model):
         mask = tf.ones(tf.shape(inp), dtype=tf.int32) * self.sep_token
         mask = tf.equal(inp, mask)
         mask = tf.cast(mask, dtype=tf.int32)
-        mask_indicator = tf.argmax(mask, axis=1)
-        mask_indicator = tf.expand_dims(mask_indicator, axis=1)
-        mask_indicator = tf.tile(mask_indicator, [1, tf.shape(inp)[1]])
+        bos_indicator = tf.argmax(mask, axis=1)
+        mask_indicator_matrix = tf.expand_dims(bos_indicator, axis=1)
+        mask_indicator_matrix = tf.tile(mask_indicator_matrix, [1, tf.shape(inp)[1]])
 
         index_matrix = tf.range(0, tf.shape(inp)[1], dtype=tf.int64 )
         index_matrix = tf.expand_dims(index_matrix, axis = 0)
         index_matrix = tf.tile(index_matrix, [tf.shape(inp)[0], 1])
 
-        loss_mask = tf.math.greater(index_matrix,mask_indicator)
+        loss_mask = tf.math.greater(index_matrix,mask_indicator_matrix)
         loss_mask = tf.cast(loss_mask, dtype=tf.int32)
         return loss_mask
 
     def train_step(self, input_list):
         inp_tensor, tar = input_list
-        inp = inp_tensor[:, 1:]
+        inp = inp_tensor[:, :-1]
         tar_real = inp_tensor[:, 1:]
 
         comp_mask = self.create_loss_mask(tar_real)

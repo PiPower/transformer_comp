@@ -2,7 +2,6 @@ import numpy as np
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import tensorflow as tf
 
-
 def preprocess_data(net_input, pt, tokenizer_eng, tokenizer_pt = None, batch_size = 32, max_len= None, to_tuple = False):
   net_input = tokenizer_eng.texts_to_sequences(net_input)
   net_input = pad_sequences(net_input, padding='post', maxlen=max_len)
