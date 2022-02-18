@@ -73,17 +73,25 @@ def evaluate_sentence_prediction(predicted, real):
     total_number += 1
   return correct, total_number
 
-def test(tokenizer_pt, model, test_dataset, test_count, max_length = 10, mode = "base_model"):
+def test(tokenizer_pt, model, test_dataset, test_count, max_length = 10, mode = "base_model", tokenizer_eng = None):
   begin_char = tokenizer_pt.word_index["bos"]
   completed_predictions = []
   for j, sentence in enumerate(test_dataset):
     input_sentece, target_sentence = sentence
-    tar = [begin_char]
+    tar = [tokenizer_pt.word_index["bos"]]
+
+    if tokenizer_eng is not None:
+      translated_tar = [tokenizer_eng.word_index["bos"]]
+
     if j % 5 == 0:
       print("it is {}th sentence".format(j))
 
     for i in range(max_length):
-        feed = np.asarray([tar ] )
+        if tokenizer_eng is not None:
+          feed = np.asarray([translated_tar] )
+        else:
+          feed = np.asarray([tar])
+
         if mode == "base_model":
             prediction = model([input_sentece,feed])
         else:
@@ -97,6 +105,12 @@ def test(tokenizer_pt, model, test_dataset, test_count, max_length = 10, mode = 
         tar.append(result)
         if result == tokenizer_pt.word_index["eos"]:
           break
+        if tokenizer_eng is not None:
+          result = tokenizer_pt.index_word[result]
+          result = tokenizer_eng.word_index[result]
+          translated_tar.append(result)
+
+
     completed_predictions.append((tar, target_sentence.numpy() ))
     if j > test_count:
       break

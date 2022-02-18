@@ -52,7 +52,7 @@ if __name__ == "__main__":
         learning_rate = CustomSchedule(128)
         optimizer_adam = tf.keras.optimizers.Adam(learning_rate)
         history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_adam, epochs = 2)
-        accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2")
+        accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2", tokenizer_eng=tokenizer_eng)
         model_histories["adam"] = history.history
         model_histories["adam"]["test accuracy"] = accuracy
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         learning_rate = CustomSchedule(128)
         optimizer_rmsprop = tf.keras.optimizers.RMSprop(learning_rate)
         history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_rmsprop, epochs = 30)
-        accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2")
+        accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2", tokenizer_eng=tokenizer_eng)
         model_histories["rmsprop"] = history.history
         model_histories["rmsprop"]["test accuracy"] = accuracy
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         learning_rate = CustomSchedule(128)
         optimizer_sgd = tf.keras.optimizers.SGD(learning_rate)
         history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_sgd, epochs = 30)
-        accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2")
+        accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2", tokenizer_eng=tokenizer_eng)
         model_histories["sgd"] = history.history
         model_histories["sgd"]["test accuracy"] = accuracy
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         learning_rate = CustomSchedule(128)
         optimizer_nadam = tf.keras.optimizers.Nadam()
         history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_nadam, epochs = 30)
-        accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2")
+        accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2", tokenizer_eng=tokenizer_eng)
         model_histories["nadam"] = history.history
         model_histories["nadam"]["test accuracy"] = accuracy
 
