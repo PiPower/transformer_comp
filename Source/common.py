@@ -20,7 +20,7 @@ def preprocess_data(net_input, pt, tokenizer_eng, tokenizer_pt = None, batch_siz
     out = []
     for x, y in dataset:
       out.append((x,y))
-      return out
+    return out
 
   dataset = dataset.batch(batch_size, True)
   return dataset

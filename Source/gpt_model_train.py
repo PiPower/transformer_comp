@@ -23,8 +23,8 @@ def train_gpt(train_dataset, eng_word_count ,pt_word_count,sep_token, optimizer 
   return history, transformer_model
 
 if __name__ == "__main__":
-  train_count = None
-  test_count = None
+  train_count = 200
+  test_count = 20
   train_pt, train_eng = load_texts_gpt2("../datasets/eng-pt/train.txt", train_count)
   test_pt, test_eng = load_texts("../datasets/eng-pt/test.txt", test_count)
 
@@ -37,7 +37,7 @@ if __name__ == "__main__":
   sep_token = tokenizer_pt.word_index['bos']
 
   train_dataset = preprocess_data(train_eng,train_eng, tokenizer_eng,tokenizer_pt, batch_size= 64)
-  test_dataset = preprocess_data(test_eng,test_pt, tokenizer_eng, batch_size=1, to_tuple= True)
+  test_dataset = preprocess_data(test_eng,test_pt, tokenizer_eng, tokenizer_pt, batch_size=1, to_tuple= True)
 
   eng_word_count = len(tokenizer_eng.word_index)+1
   pt_word_count = len(tokenizer_pt.word_index)+1
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         print("training on adam")
         learning_rate = CustomSchedule(128)
         optimizer_adam = tf.keras.optimizers.Adam(learning_rate)
-        history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_adam, epochs = 30)
+        history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_adam, epochs = 2)
         accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2")
         model_histories["adam"] = history.history
         model_histories["adam"]["test accuracy"] = accuracy
