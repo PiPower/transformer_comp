@@ -51,7 +51,7 @@ if __name__ == "__main__":
         print("training on adam")
         learning_rate = CustomSchedule(128)
         optimizer_adam = tf.keras.optimizers.Adam(learning_rate)
-        history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_adam, epochs = 2)
+        history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_adam, epochs = 30)
         accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2", tokenizer_eng=tokenizer_eng)
         model_histories["adam"] = history.history
         model_histories["adam"]["test accuracy"] = accuracy

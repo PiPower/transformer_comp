@@ -74,7 +74,6 @@ def evaluate_sentence_prediction(predicted, real):
   return correct, total_number
 
 def test(tokenizer_pt, model, test_dataset, test_count, max_length = 10, mode = "base_model", tokenizer_eng = None):
-  begin_char = tokenizer_pt.word_index["bos"]
   completed_predictions = []
   for j, sentence in enumerate(test_dataset):
     input_sentece, target_sentence = sentence
