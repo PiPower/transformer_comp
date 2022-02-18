@@ -4,8 +4,6 @@ from custom_schedule import CustomSchedule
 from tensorflow.keras.preprocessing.text import Tokenizer
 from gpt2_model import GPT2
 from transformer_layers import auto_reg_loss, accuracy_function
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-import tensorflow as tf
 import sys
 from common import *
 
@@ -36,7 +34,7 @@ if __name__ == "__main__":
 
   sep_token = tokenizer_pt.word_index['bos']
 
-  train_dataset = preprocess_data(train_eng,train_eng, tokenizer_eng,tokenizer_pt, batch_size= 64)
+  train_dataset = preprocess_data(train_eng,train_eng, tokenizer_eng,tokenizer_pt, batch_size= 64, max_len=125)
   test_dataset = preprocess_data(test_eng,test_pt, tokenizer_eng, tokenizer_pt, batch_size=1, to_tuple= True)
 
   eng_word_count = len(tokenizer_eng.word_index)+1
