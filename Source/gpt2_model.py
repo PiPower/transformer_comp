@@ -124,7 +124,7 @@ class GPT2(tf.keras.Model):
     def train_step(self, input_list):
         inp_tensor, tar = input_list
         inp = inp_tensor[:, :-1]
-        tar_real = inp_tensor[:, 1:]
+        tar_real = tar[:, 1:]
 
         comp_mask = self.create_loss_mask(tar_real)
         with tf.GradientTape() as tape:

@@ -23,8 +23,8 @@ def train_gpt(train_dataset, eng_word_count ,pt_word_count,sep_token, optimizer 
   return history, transformer_model
 
 if __name__ == "__main__":
-  train_count = 200
-  test_count = 20
+  train_count = None
+  test_count = None
   train_pt, train_eng = load_texts_gpt2("../datasets/eng-pt/train.txt", train_count)
   test_pt, test_eng = load_texts("../datasets/eng-pt/test.txt", test_count)
 
