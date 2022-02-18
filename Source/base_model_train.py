@@ -33,7 +33,7 @@ if __name__ == "__main__":
   tokenizer_eng.fit_on_texts(train_eng)
   tokenizer_pt.fit_on_texts(train_pt)
 
-  train_dataset = preprocess_data(train_eng,train_pt, tokenizer_eng, tokenizer_pt, 64)
+  train_dataset = preprocess_data(train_eng,train_pt, tokenizer_eng, tokenizer_pt, 64, max_len=70)
   test_dataset = preprocess_data(test_eng,test_pt, tokenizer_eng, tokenizer_pt, 1, to_tuple= True)
 
   eng_word_count = len(tokenizer_eng.word_index)+1
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
   json_file_path = "../trainning_results/base_model_results.json"
 
-  for name in sys.argv:
+  for name in sys.argv[1:]:
       if name == "adam":
         print("training on adam")
         learning_rate = CustomSchedule(128)

@@ -7,8 +7,8 @@ from transformer_layers import auto_reg_loss, accuracy_function
 import sys
 from common import *
 
-def train_gpt(train_dataset, eng_word_count ,pt_word_count,sep_token, optimizer = "Adam",  num_layers = 4,
-  d_model = 128, dff = 512, num_heads = 8, dropout_rate = 0.1,**kwargs ):
+def train_gpt(train_dataset, eng_word_count ,pt_word_count,sep_token, optimizer = "Adam",  num_layers = 8,
+  d_model = 256, dff = 512, num_heads = 8, dropout_rate = 0.1,**kwargs ):
 
 
   transformer_model = GPT2(num_layers=num_layers, d_model=d_model, num_heads=num_heads, dff=dff,
@@ -26,7 +26,7 @@ if __name__ == "__main__":
   train_pt, train_eng = load_texts_gpt2("../datasets/eng-pt/train.txt", train_count)
   test_pt, test_eng = load_texts("../datasets/eng-pt/test.txt", test_count)
 
-  tokenizer_eng = Tokenizer()
+  tokenizer_eng = Tokenizer(oov_token = 'oov')
   tokenizer_pt = Tokenizer(oov_token = 'oov')
 
   tokenizer_eng.fit_on_texts(train_eng)
@@ -44,10 +44,10 @@ if __name__ == "__main__":
 
   json_file_path = "../trainning_results/gpt_model_results.json"
 
-  for name in sys.argv:
+  for name in sys.argv[1:]:
       if name == "adam":
         print("training on adam")
-        learning_rate = CustomSchedule(128)
+        learning_rate = CustomSchedule(256)
         optimizer_adam = tf.keras.optimizers.Adam(learning_rate)
         history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_adam, epochs = 30)
         accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2", tokenizer_eng=tokenizer_eng)
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
       elif name == "rmsprop":
         print("training on rmsprop")
-        learning_rate = CustomSchedule(128)
+        learning_rate = CustomSchedule(256)
         optimizer_rmsprop = tf.keras.optimizers.RMSprop(learning_rate)
         history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_rmsprop, epochs = 30)
         accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2", tokenizer_eng=tokenizer_eng)
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
       elif name == "sgd":
         print("training on sgd")
-        learning_rate = CustomSchedule(128)
+        learning_rate = CustomSchedule(256)
         optimizer_sgd = tf.keras.optimizers.SGD(learning_rate)
         history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_sgd, epochs = 30)
         accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2", tokenizer_eng=tokenizer_eng)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
       elif name == "nadam":
         print("training on nadam")
-        learning_rate = CustomSchedule(128)
+        learning_rate = CustomSchedule(256)
         optimizer_nadam = tf.keras.optimizers.Nadam()
         history, model  = train_gpt(train_dataset, eng_word_count, pt_word_count, sep_token, optimizer = optimizer_nadam, epochs = 30)
         accuracy = test(tokenizer_pt, model, test_dataset, 500, 60, mode = "gpt2", tokenizer_eng=tokenizer_eng)
