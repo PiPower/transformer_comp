@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
   json_file_path = "../trainning_results/base_model_results.json"
 
-  for name in ["adam"]:
+  for name in sys.argv:
       if name == "adam":
         print("training on adam")
         learning_rate = CustomSchedule(128)
